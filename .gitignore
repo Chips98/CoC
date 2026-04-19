@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+.pytest_cache/
+.venv/
+venv/
+
+# IDE
+.vscode/
+.idea/
+.DS_Store
+
+# Runtime
+logs/
+runtime/
+results/
+outputs/
+*.log
+
+# Local secrets / keys
+.env
+*.key
+
+# Data (bring your own benchmark splits)
+data/
+!data/README.md

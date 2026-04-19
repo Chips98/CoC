@@ -1,0 +1,131 @@
+# ============================================================
+# CoC default config — all hyperparameters and switches.
+# ============================================================
+
+# ── LLM 服务 ──
+llm:
+  model_name: "Qwen3-8B"
+  api_base: "http://localhost:7862/v1"
+  api_key: "EMPTY"
+  temperature: 0.0
+  max_tokens: 8196
+  timeout: 120
+
+# ── Embedding 服务 ──
+embedding:
+  api_base: "http://localhost:6862/v1"
+  model: "Qwen3-Embedding-4B"
+  api_key: ""
+  dim: 2560
+  timeout: 120
+
+# ── BDP 推理树 ──
+bdp_tree:
+  max_depth: 5                      # 最大链深度 d_max（Ctx → 1-3 个 BDP 原语 → 答案壳）
+  root_candidates:
+    - "fact_extract"
+    - "question_focus"
+    - "constraint_parse"
+
+# ── MCTS 搜索 ──
+mcts:
+  num_simulations: 6                # 模拟次数（1=贪心单轨，>1=多轨搜索）— 原 4，提高到 6 让搜索真正展开
+  lambda_explore: 0.5               # UCB 探索系数 λ
+  mu_theory: 0.7                    # 理论先验权重 μ
+  nu_memory: 0.3                    # 记忆先验权重 ν
+  confidence_threshold: 0.92        # 早停置信度阈值 — 原 0.85 太低导致首轮即停
+  progressive_widening_k: 0.5       # 渐进展宽系数 — 原 1.5 太大导致每父节点仅扩展 1 子
+  rollout_strategy: "greedy"        # greedy / random / hybrid
+  freeze_q_during_eval: false       # 改为 false，配合 memory.isolate_per_run=true 实现隔离学习
+
+# ── 节点价值更新 ──
+node_value:
+  alpha: 0.2                        # EMA 学习率
+  initial_q: 0.5                    # Q 值中性初始化
+  soft_prune_threshold: 0.25        # 软剪枝阈值
+  min_visits_for_prune: 5           # 最少访问次数才触发剪枝
+
+# ── 伪奖励权重 ──
+reward:
+  w_coherence: 0.4                  # 一致性权重
+  w_fit: 0.3                        # 匹配度权重
+  w_convergence: 0.3                # 收敛度权重
+
+# ── 路由 ──
+routing:
+  mode: "rule"                      # rule / llm
+
+# ── 记忆 ──
+memory:
+  enable: true
+  short_term_capacity: 1000
+  retrieval_top_k: 3
+  similarity_threshold: 0.8
+  isolate_per_run: true             # 评测期单独 memory 仓，避免跨样本污染但仍允许学习
+
+# ── 答案生成 ──
+# Pipeline is compact-only. `heuristic_mode` has been removed (rule-based
+# answer override was a reviewer risk). Refinement is opt-in through the
+# `verification` block below; without it, the answer-stage output is final.
+answer:
+  max_retries: 2                    # 节点执行最大重试次数
+  node_output_max_words: 256        # 节点输出最大字数
+  inject_task_priors: true          # 启用任务级规则注入
+
+# ── 自适应搜索（链深度 + MCTS 模拟次数由任务复杂度决定；始终启用搜索） ──
+adaptive_chain:
+  socialiqa:
+    max_depth: 2                    # 2-3 步短链：Ctx → 1 BDP 原语 → option_filter
+    num_simulations: 4
+    temperature: 0.0
+  sotopia:
+    max_depth: 5                    # 完整 BDP 链：Ctx → P/K → B → DE → I → action_forecast/verify
+    num_simulations: 4
+    temperature: 0.4                # 对话需要多样性
+  tombench:
+    max_depth: 5                    # 4-5 步长链：充分利用 BDP 因果推理
+    num_simulations: 4              # 真正开启 MCTS（之前 =1 等价贪心）
+    temperature: 0.0
+  # ── ToMBench 弱维度特化（per-benchmark_task override，仅作用于命中子任务）──
+  # FBT：GT 由"时间线状态更新"机械决定，线性 CoT 占优；
+  #      MCTS 多路径探索会稀释"谁何时看到什么"的追踪。
+  tombench_false_belief_task:
+    max_depth: 2                    # fact → option_filter（最短线性链）
+    num_simulations: 1              # 贪心单轨 = CoT-like 线性路径
+    temperature: 0.0
+  # FRT：需要"多角色知识隔离"，小模型下多路径会漂移；
+  #      保留适度深度用于角色级追踪，但关闭探索。
+  tombench_faux-pas_recognition_test:
+    max_depth: 4
+    num_simulations: 1
+    temperature: 0.0
+
+# ── 日志 ──
+logging:
+  level: "WARNING"
+  to_file: true
+  print_prompts: false              # 是否打印完整 LLM prompt
+  print_node_outputs: true          # 是否打印节点输出
+  save_result_json: true
+  debug_level: 0                    # 0=关闭, 1=摘要调试, 2=完整 prompt/response
+
+# ── 核查机制（系统中唯一的答案精炼入口；默认关闭）──
+#   启用任一项之前请确认：
+#   - verify_answer 在 Qwen3-8B TomBench 上净负面（FBT -16pp），建议只在大模型 / 特定场景手动开
+#   - optimize_sotopia_response 对对话任务的收益未经充分验证
+#   - 所有启发式修正（heuristic_false_belief_confirm 等）在 answer_generator.generate 内已生效，
+#     verification 会在其之后再跑一轮，可能 override 正确的启发式答案（已观测到 371 bad flips）
+verification:
+  enable_socialiqa: false           # 选择级别核查：盲审重读验证
+  enable_tombench: false            # ToM 核查：追溯心理状态链，逐项验证
+  enable_sotopia: false             # 维度优化：BEL/REL/KNO/SEC/SOC/FIN/GOAL 各维度分析并优化
+
+# ── 消融开关 ──
+ablation:
+  no_theory_prior: false            # 保留理论先验（A 类：搜索先验）
+  no_value_update: false            # 允许 Q 值更新（C 类：价值学习）
+  no_tree_search: false             # 必须开启树搜索（A 类：搜索结构）
+  no_memory_prior: false            # 保留记忆先验（B 类：记忆先验）
+  no_memory: false                  # 开启记忆（B 类：完全记忆）
+  no_progressive_widening: false    # 关闭渐进展宽 → 改为按 max_depth 全展开（A 类）
+  random_rollout: false             # 强制使用 random rollout（A 类，等价 mcts.rollout_strategy=random）

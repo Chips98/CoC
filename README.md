@@ -1,17 +1,14 @@
 # CoC — Chain-of-Cognition
 
-Reference implementation for the paper *"CoC: A Chain-of-Cognition Agent
-for Social Reasoning"*. CoC is a structured social-reasoning agent that
-plans and executes reasoning along a **Belief–Desire–Perception (BDP)**
-cognition tree and selects a path with **MCTS**.
+Reference implementation for the paper *"Chain of Cognition: Searchable
+Belief–Desire Psychology for Theory-of-Mind Reasoning in LLMs"*. CoC is a
+structured social-reasoning agent that plans and executes reasoning along a
+**Belief–Desire Psychology (BDP)** cognition tree and selects a path with
+**MCTS**.
 
-This repository is a **clean release**: the overall method, modules, and
-control flow are identical to what is reported in the paper, but the
-hand-crafted per-benchmark / per-task / per-ability lookup tables that
-existed in our research codebase have been **removed**. What remains is
-the generic BDP + MCTS pipeline, so results produced here are slightly
-lower than, but qualitatively consistent with, the numbers reported in
-the paper.
+This repository is a **clean reference implementation**: the method, modules,
+and control flow follow the paper, exposing the generic BDP + MCTS pipeline
+for study and extension.
 
 ---
 
@@ -100,36 +97,23 @@ and prints the cognition chain and the final answer.
 ## Reproducing benchmark results
 
 We provide thin eval harnesses for the three benchmarks reported in the
-paper. Bring your own splits (we do not ship benchmark data here).
+paper — ToMBench, SimpleToM, and SocialIQA. Bring your own splits (we do
+not ship benchmark data here).
 
 ```bash
 # ToMBench
-python scripts/run_tombench.py  --data /path/to/tombench.jsonl  --out results/tombench
+python scripts/run_tombench.py   --data /path/to/tombench.jsonl   --out results/tombench
+
+# SimpleToM
+python scripts/run_simpletom.py  --data /path/to/simpletom.jsonl  --out results/simpletom
 
 # SocialIQA
-python scripts/run_socialiqa.py --data /path/to/socialiqa.jsonl --out results/socialiqa
-
-# Sotopia
-python scripts/run_sotopia.py   --data /path/to/sotopia.jsonl   --out results/sotopia
+python scripts/run_socialiqa.py  --data /path/to/socialiqa.jsonl  --out results/socialiqa
 ```
 
-Each script writes per-sample JSONL + an aggregate report.
-
----
-
-## Differences from the research codebase
-
-The research codebase contained ~1,400 lines of hand-crafted priors
-indexed by `(benchmark_task, ability, question_type)` — for example:
-
-- 50+ scene-critical rules for ToMBench sub-abilities,
-- plan-writing softeners for 5 ToMBench weak tasks,
-- per-question calibration examples for SocialIQA,
-- per-goal / per-history heuristics for Sotopia bargaining.
-
-All of the above has been **removed** from this release. The clean
-repo keeps a single generic prior and an empty interface for people
-who want to re-introduce their own priors.
+A Sotopia harness (`scripts/run_sotopia.py`) is also included for the
+additional multi-turn dialogue setting. Each script writes per-sample JSONL
+predictions.
 
 ---
 

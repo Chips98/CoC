@@ -61,10 +61,17 @@ _NODE_BDP_DESCRIPTION_EN: Dict[str, str] = {
         "of the world from their last observed state; a missed event "
         "leaves the world unchanged in their belief."
     ),
-    "emotion_desire": (
-        "Emotion / Desire [DE]: infer felt emotion or desire from the "
-        "character's goals, expectations, and concerns. Treat surface event "
-        "valence with suspicion when the character worries about disruption."
+    "desire": (
+        "Desire [D]: infer what the character wants or prefers from their "
+        "goals, priorities, and stated/implicit preferences. Separate a true "
+        "desire from social obligation, and respect 'but this time' clauses "
+        "that break a habitual compromise."
+    ),
+    "emotion": (
+        "Emotion [E]: infer the felt emotion from how the event bears on the "
+        "character's desires, expectations, and concerns. Treat surface event "
+        "valence with suspicion when the character worries about disruption; "
+        "distinguish the inner feeling from its outward display."
     ),
     "intent_strategy": (
         "Intent / Strategy [I]: recover the practical GOAL behind an action "
@@ -116,9 +123,15 @@ _NODE_BDP_DESCRIPTION_ZH: Dict[str, str] = {
         "信念状态 [B]：基于目标角色最后观察到的状态重建其心智模型；"
         "错过的事件在其信念中未发生。"
     ),
-    "emotion_desire": (
-        "情感/欲望 [DE]：从角色的目标、预期、担忧推断其真实情感或欲望。"
-        "当角色担心秩序被打乱时，正面事件也可能触发负面情绪。"
+    "desire": (
+        "欲望 [D]：从角色的目标、优先级与显式/隐式偏好推断其真正想要的东西。"
+        "区分真实欲望与社交义务；当出现 but this time / 今天偏要 这类信号时，"
+        "历史性的妥协模式被打破，应以角色当下表达的偏好为准。"
+    ),
+    "emotion": (
+        "情感 [E]：从事件对角色欲望、预期、担忧的冲击推断其真实情感。"
+        "当角色担心秩序被打乱时，正面事件也可能触发负面情绪；"
+        "区分内心真实感受与外在表现。"
     ),
     "intent_strategy": (
         "意图/策略 [I]：还原行动或话语背后的实际目标，而非其字面内容或结果——"
@@ -150,10 +163,11 @@ def _get_bdp_description(node_id: str, language: str = "en") -> str:
 
 _CONDITIONING_RULES: Dict[str, List[str]] = {
     "belief_state": ["observation_track", "knowledge_state"],
-    "emotion_desire": ["belief_state", "knowledge_state"],
-    "intent_strategy": ["emotion_desire", "belief_state"],
+    "desire": ["belief_state", "knowledge_state"],
+    "emotion": ["desire", "belief_state", "knowledge_state"],
+    "intent_strategy": ["desire", "emotion", "belief_state"],
     "pragmatics": ["intent_strategy", "belief_state"],
-    "action_forecast": ["intent_strategy", "belief_state", "emotion_desire"],
+    "action_forecast": ["intent_strategy", "belief_state", "desire", "emotion"],
     "option_filter": ["intent_strategy", "action_forecast", "pragmatics"],
     "verify": ["option_filter", "action_forecast"],
 }

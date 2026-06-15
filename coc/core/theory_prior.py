@@ -190,7 +190,12 @@ def scene_prior(scene_type: str, node_id: str, benchmark: str = "") -> float:
     """
     tag = BDP_NODE_TYPE.get(node_id, "")
     table = _get_table(scene_type, benchmark)
-    return table.get(tag, 0.3)
+    weight = table.get(tag)
+    if weight is None and tag in ("D", "E"):
+        # D(desire)/E(emotion) 由原合并节点 DE 拆分而来；权重表仍以 "DE"
+        # 为键时，两者各自继承 DE 的理论先验（MCTS 的 Q 值会让其分化）。
+        weight = table.get("DE")
+    return weight if weight is not None else 0.3
 
 
 def build_theory_prior(

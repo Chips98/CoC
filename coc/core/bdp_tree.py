@@ -18,7 +18,8 @@ BDP_NODE_TYPE: Dict[str, str] = {
     "observation_track": "P",    # 感知 Perception
     "knowledge_state":   "K",    # 知识 Knowledge
     "belief_state":      "B",    # 信念 Belief
-    "emotion_desire":    "DE",   # 欲望+情绪 Desire/Emotion
+    "desire":            "D",    # 欲望 Desire
+    "emotion":           "E",    # 情绪 Emotion
     "intent_strategy":   "I",    # 意图 Intention
     "pragmatics":        "U",    # 语用 Utterance
     "action_forecast":   "A",    # 行为 Action
@@ -42,13 +43,13 @@ BDP_EDGES: Dict[str, Set[str]] = {
     "fact_extract": {
         "question_focus", "constraint_parse",
         "observation_track", "knowledge_state", "belief_state",
-        "emotion_desire", "intent_strategy", "pragmatics",
+        "desire", "emotion", "intent_strategy", "pragmatics",
         "action_forecast",
     },
     "question_focus": {
         "constraint_parse",
         "observation_track", "knowledge_state", "belief_state",
-        "emotion_desire", "intent_strategy", "pragmatics",
+        "desire", "emotion", "intent_strategy", "pragmatics",
         "action_forecast",
     },
     # 注：原本 constraint_parse → option_filter 的直边会让 MCTS 选出
@@ -57,13 +58,14 @@ BDP_EDGES: Dict[str, Set[str]] = {
     # 情况下作答。这里删除这条捷径，强制至少经过一个 BDP 原语。
     "constraint_parse": {
         "observation_track", "knowledge_state", "belief_state",
-        "emotion_desire", "intent_strategy", "pragmatics", "action_forecast",
+        "desire", "emotion", "intent_strategy", "pragmatics", "action_forecast",
     },
-    # BDP 因果依赖：P → K → B，B → DE，B → I，DE → I，I → A，I → U
+    # BDP 因果依赖：P → K → B；B → D，B → E，D → E；D/E → I，I → A，I → U
     "observation_track": {"knowledge_state", "belief_state"},
-    "knowledge_state":   {"belief_state", "emotion_desire"},
-    "belief_state":      {"emotion_desire", "intent_strategy", "action_forecast"},
-    "emotion_desire":    {"intent_strategy", "action_forecast"},
+    "knowledge_state":   {"belief_state", "desire", "emotion"},
+    "belief_state":      {"desire", "emotion", "intent_strategy", "action_forecast"},
+    "desire":            {"emotion", "intent_strategy", "action_forecast"},
+    "emotion":           {"intent_strategy", "action_forecast"},
     "intent_strategy":   {"action_forecast", "pragmatics", "option_filter"},
     "pragmatics":        {"intent_strategy", "option_filter"},
     "action_forecast":   {"option_filter", "verify"},

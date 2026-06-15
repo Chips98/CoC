@@ -26,3 +26,7 @@ outputs/
 # Data (bring your own benchmark splits)
 data/
 !data/README.md
+# Keep theory-prior config tables (these are config, not benchmark data)
+!coc/data/
+coc/data/*
+!coc/data/priors/

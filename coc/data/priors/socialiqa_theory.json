@@ -1,0 +1,54 @@
+{
+  "_comment": "BDP 节点先验权重 — SocialIQA 专属 v3。Bug修复后重新调校：降低无关节点权重，提高核心节点精度，减少MCTS过度搜索。",
+  "scene_weights": {
+    "emotion_reasoning": {
+      "_comment": "feel/描述题：DE核心，Opt兜底校验，Ver适度",
+      "Ctx": 0.7, "P": 0.3, "K": 0.2, "B": 0.4,
+      "DE": 1.0, "I": 0.3, "A": 0.3, "U": 0.3,
+      "Opt": 0.9, "Ver": 0.5
+    },
+    "intention_reasoning": {
+      "_comment": "why题：意图(I)核心，不需要知识或感知节点",
+      "Ctx": 0.7, "P": 0.3, "K": 0.2, "B": 0.3,
+      "DE": 0.4, "I": 1.0, "A": 0.4, "U": 0.2,
+      "Opt": 0.8, "Ver": 0.5
+    },
+    "prerequisite_reasoning": {
+      "_comment": "before-this题：知识+行动是关键，B权重低(无错误信念)",
+      "Ctx": 0.8, "P": 0.6, "K": 0.9, "B": 0.2,
+      "DE": 0.2, "I": 0.5, "A": 0.9, "U": 0.1,
+      "Opt": 0.9, "Ver": 0.6
+    },
+    "consequence_reasoning": {
+      "_comment": "what-will-happen-to题：行动后果(A)核心，保持简洁",
+      "Ctx": 0.8, "P": 0.4, "K": 0.3, "B": 0.2,
+      "DE": 0.5, "I": 0.4, "A": 1.0, "U": 0.2,
+      "Opt": 0.9, "Ver": 0.6
+    },
+    "next_action_reasoning": {
+      "_comment": "next-step题：A核心，I辅助，去掉无用的K/B",
+      "Ctx": 0.7, "P": 0.3, "K": 0.2, "B": 0.2,
+      "DE": 0.3, "I": 0.7, "A": 1.0, "U": 0.1,
+      "Opt": 0.9, "Ver": 0.5
+    },
+    "social_norm_reasoning": {
+      "_comment": "describe/should题：语用+意图+选项过滤三角核心",
+      "Ctx": 0.7, "P": 0.2, "K": 0.2, "B": 0.2,
+      "DE": 0.5, "I": 0.7, "A": 0.4, "U": 1.0,
+      "Opt": 0.8, "Ver": 0.5
+    },
+    "planning_reasoning": {
+      "_comment": "向后兼容回退，保持与next_action相似",
+      "Ctx": 0.7, "P": 0.3, "K": 0.2, "B": 0.2,
+      "DE": 0.3, "I": 0.6, "A": 1.0, "U": 0.1,
+      "Opt": 0.8, "Ver": 0.5
+    },
+    "belief_reasoning": {
+      "_comment": "信念推理（较少出现在SocialIQA），保持中等权重",
+      "Ctx": 0.7, "P": 0.5, "K": 0.5, "B": 0.9,
+      "DE": 0.4, "I": 0.5, "A": 0.4, "U": 0.2,
+      "Opt": 0.7, "Ver": 0.5
+    }
+  },
+  "_note": "v3 改动：(1) 降低无关节点(B/K/U)在各场景的权重，避免MCTS选入不相关节点增加噪声；(2) 提升Opt权重至0.8-0.9确保选项过滤稳定；(3) 降低Ver权重防止过度校验翻转正确答案。"
+}

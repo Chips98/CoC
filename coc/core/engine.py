@@ -117,7 +117,7 @@ class CoCEngine:
     def __init__(self, llm_client, config_path: Optional[Path] = None):
         # 加载配置
         if config_path is None:
-            config_path = Path(__file__).resolve().parent.parent / "config" / "config.yaml"
+            config_path = Path(__file__).resolve().parent.parent.parent / "configs" / "default.yaml"
         self.cfg = load_config(config_path)
         self.llm_client = llm_client
 

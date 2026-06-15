@@ -1,0 +1,48 @@
+{
+  "_comment": "BDP 节点先验权重 — ToMBench & SimpleToM 专属。显式ToM推理，信念/知识/情绪/意图均需精细建模。2026-04-17: tuned for weak-task MCTS routing (PST/FBT/FRT).",
+  "scene_weights": {
+    "belief_reasoning": {
+      "Ctx": 0.8, "P": 1.0, "K": 0.95, "B": 1.0,
+      "DE": 0.05, "I": 0.2, "A": 0.05, "U": 0.2,
+      "Opt": 0.85, "Ver": 0.6,
+      "_tuning_note": "FBT: boost P/K (observation & knowledge), keep B at max. DE and A aggressively demoted to 0.05 to prevent MCTS from adding emotion_desire/action_forecast as useless tail nodes (length_bonus was inflating chain to 6 steps with these hurting FBT accuracy -8pp). Opt raised to 0.85 so chain terminates cleanly at option_filter."
+    },
+    "knowledge_reasoning": {
+      "Ctx": 0.8, "P": 1.0, "K": 1.0, "B": 0.8,
+      "DE": 0.2, "I": 0.3, "A": 0.3, "U": 0.1,
+      "Opt": 0.7, "Ver": 0.6
+    },
+    "emotion_reasoning": {
+      "Ctx": 0.7, "P": 0.4, "K": 0.4, "B": 0.6,
+      "DE": 1.0, "I": 0.5, "A": 0.4, "U": 0.3,
+      "Opt": 0.6, "Ver": 0.5
+    },
+    "desire_reasoning": {
+      "Ctx": 0.7, "P": 0.3, "K": 0.4, "B": 0.5,
+      "DE": 1.0, "I": 0.6, "A": 0.5, "U": 0.2,
+      "Opt": 0.6, "Ver": 0.5
+    },
+    "intention_reasoning": {
+      "Ctx": 0.7, "P": 0.4, "K": 0.5, "B": 0.7,
+      "DE": 0.6, "I": 1.0, "A": 0.3, "U": 0.9,
+      "Opt": 0.6, "Ver": 0.5,
+      "_tuning_note": "PST (persuasion): boost U (pragmatics) and demote A (action_forecast); persuasion mechanism is pragmatic, not action-predictive."
+    },
+    "nonliteral_reasoning": {
+      "Ctx": 0.8, "P": 0.5, "K": 0.95, "B": 0.85,
+      "DE": 0.4, "I": 0.8, "A": 0.3, "U": 1.0,
+      "Opt": 0.7, "Ver": 0.6,
+      "_tuning_note": "FRT: boost K (knowledge_state) and B (belief_state) for per-character knowledge tracking (who knows what about sensitive topic)."
+    },
+    "planning_reasoning": {
+      "Ctx": 0.8, "P": 0.6, "K": 0.6, "B": 0.7,
+      "DE": 0.5, "I": 0.9, "A": 1.0, "U": 0.3,
+      "Opt": 0.7, "Ver": 0.6
+    },
+    "social_norm_reasoning": {
+      "Ctx": 0.8, "P": 0.5, "K": 0.6, "B": 0.6,
+      "DE": 0.5, "I": 0.7, "A": 0.6, "U": 0.7,
+      "Opt": 0.7, "Ver": 0.6
+    }
+  }
+}
